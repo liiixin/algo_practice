@@ -59,9 +59,11 @@
 import java.util.HashMap;
 
 class LRUCache {
-    // 看上面的 LRUCache.java
+    // 记录 key -> 节点 的映射，O(1) 找到链表中的节点
     HashMap<Integer, Node> map;
+    // 双向链表按「使用时间」从新到旧排列节点
     DoubleLinkedList cache;
+    // 缓存的容量上限
     int cap;
 
     public LRUCache(int capacity) {
@@ -69,27 +71,31 @@ class LRUCache {
         cache = new DoubleLinkedList();
         cap = capacity;
     }
-    
+
     public int get(int key) {
         if (!map.containsKey(key)){
             return -1;
         }
+        // 每次访问后需要把节点移动到链表头部
         int val = map.get(key).val;
         put(key, val);
 
         return val;
     }
-    
+
     public void put(int key, int value) {
         Node newNode = new Node(key, value);
         if (map.containsKey(key)){
+            // 已存在则先删掉旧节点，再插入到表头
             cache.delete(map.get(key));
         }else {
             if (map.size() == cap){
+                // 超出容量时，移除链表尾部最久未使用的节点
                 int k = cache.deleteLast();
                 map.remove(k);
             }
         }
+        // 新节点统一插到链表头部，表示最近使用
         cache.addFirst(newNode);
         map.put(key, newNode);
     }
@@ -129,6 +135,7 @@ class DoubleLinkedList{
             return -1;
         }
 
+        // tail.prev 即链表中最旧的节点
         return delete(tail.prev);
     }
 }
